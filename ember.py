@@ -3,48 +3,51 @@ import re
 from bs4 import BeautifulSoup
 
 #todo: store this in db
+print 'Initializing...'
 searchString = 'Doctor Who (2005)'
 lastSeason = 10
 lastEpisode = 8
 
+#functions
 def returnHTML(url):
 	hdr = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'User-Agent' : "Python Urllib2"}
 	req = urllib2.Request(url, headers=hdr)
-
 	try:
 		response = urllib2.urlopen(req)
 	except urllib2.HTTPError, e:
 		print e.fp.read()
-
 	html = response.read()
 	return html
 
-
-
+def dataPrep(html, htmlclass, regex):
+	soup = BeautifulSoup(html, 'html.parser')
+	list = soup.find_all('a', class_=htmlclass)
+	urlPattern = re.compile(regex, re.I)
+	return list, urlPattern
+	
+#data processing
+print 'Retrieving the showlist'
 showlistHTML = returnHTML('https://eztv.ag/showlist/')
-soup = BeautifulSoup(showlistHTML, 'html.parser')
-showList = soup.find_all("a", class_="thread_link")
-urlPattern = re.compile('\<a(.*?) href=\"(.*?)\"\>(.*?)\<', re.I)
-
+showList, urlPatternShow = dataPrep(showlistHTML, 'thread_link', '\<a(.*?) href=\"(.*?)\"\>(.*?)\<')
 for i in range(len(showList)):
-	showUrl = (urlPattern.search(str(showList[i]))).group(2)
-	showName = (urlPattern.search(str(showList[i]))).group(3)
+	showUrl = (urlPatternShow.search(str(showList[i]))).group(2)
+	showName = (urlPatternShow.search(str(showList[i]))).group(3)
 	if searchString.lower() in showName.lower():
 		tempShowUrl = showUrl
 		tempShowName = showName
 
-print tempShowName + " (" + tempShowUrl + ")"
+print "Found: " + tempShowName + " (" + tempShowUrl + ")"
 
 seriesPageHTLM = returnHTML('https://eztv.ag' + tempShowUrl)
-#file = open('test.html','w')
-#file.write(seriesPage)
-#file.close()
-soup2 = BeautifulSoup(seriesPageHTLM, 'html.parser')
-episodeList = soup.find_all("a", class_="epinfo")
-urlPattern2 = re.compile('\<a(.*?) href=\"(.*?)\"(.*?)\>', re.I)
 
-newEpisode = "S" + str(lastSeason) + "E" + str(lastEpisode + 1)
+#adding leading zeros
+lastSeason = str(lastSeason) if lastSeason > 9 else "0" + str(lastSeason)
+lastEpisode = str(lastEpisode + 1) if lastEpisode > 9 else "0" + str(lastEpisode + 1)
+newEpisode = "S" + lastSeason + "E" + lastEpisode
+print "Looking for episode " + newEpisode
+
+episodeList, urlPatternEp = dataPrep(seriesPageHTLM, 'epinfo', '\<a(.*?) href=\"(.*?)\"(.*?)\>')
 for i in range(len(episodeList)):
-	episodeName = (urlPattern2.search(str(episodeList[i]))).group(3)
+	episodeName = (urlPatternEp.search(str(episodeList[i]))).group(3)
 	if newEpisode.lower() in episodeName.lower():
-		episodeUrl = (urlPattern2.search(str(episodeList[i]))).group(2)
+		print episodeName.lower()
