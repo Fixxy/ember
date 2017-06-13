@@ -1,7 +1,7 @@
 import urllib2
 import re
 from bs4 import BeautifulSoup
-#todo: eztv has an API but its limited, so I can theoretically rewrite the whole thing
+#todo: eztv has an API, so I can theoretically rewrite the whole thing, but the aforementioned API is limited
 
 #todo: store this in db / post from webpage
 print 'Initializing...'
