@@ -1,2 +1,3 @@
 # ember
-series downloader
+
+Back-end for a web TV-series manager;
