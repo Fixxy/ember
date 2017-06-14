@@ -1,20 +1,23 @@
-import urllib2
+import json
 import re
+import requests
+import urllib2
 from bs4 import BeautifulSoup
-#todo: eztv has an API, so I can theoretically rewrite the whole thing, but the aforementioned API is limited
+import ember_qbittorrent
 
-#todo: store this in db / post from webpage
+#todo: eztv has an API but its limited, so I can theoretically rewrite the whole thing
+
+#todo: store data in db / HTTP POST params from webpage
 print 'Initializing...'
 searchString = 'Doctor Who (2005)'
 lastSeason = 10
 lastEpisode = 8
 addParam1 = 'hdtv'
 addParam2 = '720p'
-statReds = ""
 
 #get html from url
 def returnHTML(url):
-	hdr = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'User-Agent' : "Python Urllib2"}
+	hdr = {'Accept': 'text/html', 'User-Agent' : "Fiddler"}
 	req = urllib2.Request(url, headers=hdr)
 	try:
 		response = urllib2.urlopen(req)
@@ -68,6 +71,7 @@ for i in range(len(episodeList)):
 				print episodeName
 				tempEpisodeUrl = episodeUrl
 
+
 #basic info
 print "----------"
 print "Retrieving latest episode's info:"
@@ -84,3 +88,15 @@ assembleInfo("Aspect Ratio", infoHTML)
 
 magnetLink = re.findall("\<a.*href=\"magnet\:(.*?)\"", infoHTML)
 print "Magnet Link: magnet" + magnetLink[0]
+
+#########################################################################################
+print "----------"
+qbHDR = {'User-Agent':"Fiddler", 'Content-type':'application/x-www-form-urlencoded'}
+payload = {'save_path':'D:/test', 'scan_dirs':'D:/test1', 'download_in_scan_dirs':'true'}
+s = requests.Session()
+print("Logging into qbittorrent's web panel")
+ember_qbittorrent.qbLogin(s, 'admin', '479f4cc9a16')
+print('set preferences')
+ember_qbittorrent.qbSetPreferences(s, qbHDR, payload)
+print('Adding magnet link')
+ember_qbittorrent.qbAddMagnet(s, qbHDR, "magnet" + magnetLink[0])
