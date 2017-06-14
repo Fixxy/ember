@@ -8,11 +8,11 @@ import ember_qbittorrent
 
 #todo: store data in db / HTTP POST params from webpage
 print 'Initializing...'
-searchString = 'Doctor Who (2005)'
-lastSeason = 10
-lastEpisode = 8
+searchString = 'Forever'
+lastSeason = 1
+lastEpisode = 1
 addParam1 = 'hdtv'
-addParam2 = '720p'
+addParam2 = ''
 
 #get html from url
 def returnHTML(url):
@@ -35,7 +35,10 @@ def dataPrep(html, tag, htmlclass, regex):
 #more optimizations
 def assembleInfo(text, html):
 	infoBit = re.findall(text + "\:\<\/b\>(.*?)\<br", html)
-	print text + ":" + infoBit[0]
+	try:
+		print text + ":" + infoBit[0]
+	except:
+		print text + ": not found"
 	return
 
 #data processing
@@ -70,7 +73,7 @@ for i in range(len(episodeList)):
 			if addParam2.lower() in episodeName.lower():
 				print episodeName
 				tempEpisodeUrl = episodeUrl
-
+print " url=" + tempEpisodeUrl
 
 #show basic info
 print "----------"
