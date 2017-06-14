@@ -1,4 +1,3 @@
-import json
 import re
 import requests
 import urllib2
@@ -60,6 +59,7 @@ lastEpisode = str(lastEpisode + 1) if lastEpisode > 9 else "0" + str(lastEpisode
 newEpisode = "S" + lastSeason + "E" + lastEpisode
 print "Looking for episode: " + newEpisode
 
+#check if episode name contains SxxExx and additional parameters
 #todo: rewrite this bit
 episodeList, urlPatternEp = dataPrep(seriesPageHTLM, 'a', 'epinfo', '\<a(.*?) href=\"(.*?)\"(.*?)\>')
 for i in range(len(episodeList)):
@@ -72,7 +72,7 @@ for i in range(len(episodeList)):
 				tempEpisodeUrl = episodeUrl
 
 
-#basic info
+#show basic info
 print "----------"
 print "Retrieving latest episode's info:"
 print "----------"
@@ -85,18 +85,17 @@ assembleInfo("Released", infoHTML)
 assembleInfo("File Format", infoHTML)
 assembleInfo("Resolution", infoHTML)
 assembleInfo("Aspect Ratio", infoHTML)
-
 magnetLink = re.findall("\<a.*href=\"magnet\:(.*?)\"", infoHTML)
-print "Magnet Link: magnet" + magnetLink[0]
+print "Magnet Link: magnet:" + magnetLink[0]
 
-#########################################################################################
+#adding magnet link to qbittorrent
 print "----------"
 qbHDR = {'User-Agent':"Fiddler", 'Content-type':'application/x-www-form-urlencoded'}
-payload = {'save_path':'D:/test', 'scan_dirs':'D:/test1', 'download_in_scan_dirs':'true'}
+payload = {'save_path':'D:/test1', 'scan_dirs':'D:/test', 'download_in_scan_dirs':'true'}
 s = requests.Session()
 print("Logging into qbittorrent's web panel")
 ember_qbittorrent.qbLogin(s, 'admin', '479f4cc9a16')
-print('set preferences')
+print('Setting preferences')
 ember_qbittorrent.qbSetPreferences(s, qbHDR, payload)
 print('Adding magnet link')
-ember_qbittorrent.qbAddMagnet(s, qbHDR, "magnet" + magnetLink[0])
+ember_qbittorrent.qbAddMagnet(s, qbHDR, "magnet:" + magnetLink[0])
