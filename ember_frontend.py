@@ -58,7 +58,7 @@ def new():
 # Scan folders for movies and tv-series
 @app.route('/scan/', methods=['GET'])
 def scan():
-	return scan_folder.scan("E:\TV-Series")
+	return scan_folder.scan("E:\TV-Series\A Bit Of Fry & Laurie")
 
 # Import - add to database
 @app.route('/new/add_to_db/', methods=['POST'])
