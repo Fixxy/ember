@@ -10,7 +10,7 @@ import ember_qbittorrent
 print 'Initializing...'
 searchString = 'Forever'
 lastSeason = 1
-lastEpisode = 1
+lastEpisode = 9
 addParam1 = 'hdtv'
 addParam2 = ''
 
@@ -57,8 +57,8 @@ print "Found: " + tempShowName + " (" + tempShowUrl + ")"
 seriesPageHTLM = returnHTML('https://eztv.ag' + tempShowUrl)
 
 #adding leading zeros
-lastSeason = str(lastSeason) if lastSeason > 9 else "0" + str(lastSeason)
-lastEpisode = str(lastEpisode + 1) if lastEpisode > 9 else "0" + str(lastEpisode + 1)
+lastSeason = str(lastSeason) if (lastSeason + 1) > 9 else "0" + str(lastSeason)
+lastEpisode = str(lastEpisode + 1) if (lastEpisode + 1) > 9 else "0" + str(lastEpisode + 1)
 newEpisode = "S" + lastSeason + "E" + lastEpisode
 print "Looking for episode: " + newEpisode
 
@@ -94,7 +94,7 @@ print "Magnet Link: magnet:" + magnetLink[0]
 #adding magnet link to qbittorrent
 print "----------"
 qbHDR = {'User-Agent':"Fiddler", 'Content-type':'application/x-www-form-urlencoded'}
-payload = {'save_path':'D:/test1', 'scan_dirs':'D:/test', 'download_in_scan_dirs':'true'}
+payload = {'save_path':'X:/Series', 'scan_dirs':'X:/Series', 'download_in_scan_dirs':'true'}
 s = requests.Session()
 print("Logging into qbittorrent's web panel")
 ember_qbittorrent.qbLogin(s, 'admin', '479f4cc9a16')

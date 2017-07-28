@@ -1,0 +1,44 @@
+{% extends 'template.html' %}
+{% block content %}
+<h3 id="h3-header" class="text-left">Search results for "{{request|safe}}":</h3>
+<div class="row"><div id="allitems"></div></div>
+<div class="row text-center"><ul id="page-numbers" class="pagination"></ul></div>
+<script>
+$(function() {
+	var noresults = {{noresults|safe}};
+	if (!noresults) {
+		var data_all = {{data_all|safe}};
+		var page = {{page|safe}};
+		var items_per_page = {{items_per_page|safe}};
+		var total_items = {{total_items|safe}};
+
+		// Pagination
+		var count = 1;
+		for (var x = 0; x < total_items; x += items_per_page) {
+			var setActiveClass = "";
+			if (count == page) setActiveClass = "active";
+			$('#page-numbers').append('<li class="' + setActiveClass + '"><a href="./' + count + '">' + count + '</a></li>');
+			count++;
+		}
+		$('#page-numbers').prepend('<li class="' + ((page == 1) ? 'disabled' : '') + '">' + ((page == 1) ? '' : '<a href="./'+String(page-1)+'" aria-label="Previous">') + '<span aria-hidden="true">&laquo;</span>' + ((page == 1) ? '' : '</a>') + '</li>');
+		$('#page-numbers').append('<li class="' + ((page == count-1) ? 'disabled' : '') + '">' + ((page == count-1) ? '' : '<a href="./'+String(page+1)+'" aria-label="Next">') + '<span aria-hidden="true">&raquo;</span>' + ((page == count-1) ? '' : '</a>') + '</li>');
+
+		// Fill div with content
+		$('#all-items').empty();
+		$.each(data_all, function(i, v) {
+			$('#allitems').append('<div class="col-md-4"><div class="thumbnail thumbs-fixed-height">' + 
+			'<img src="' + v["img_small"] + '">' + 
+			'<div class="caption">' + 
+			'<h4>' + v["title"] + '</h4>' + 
+			'<p class="desc-overflow">' + v["description"] + '</p>' + 
+			'<p><b>Rating: ' + v["rating"] + '</b></p>' + 
+			'<p><a class="btn btn-primary" href="/item/' + v['table'] + '/' + v['imdb_id'] + '">More</a></p>' + 
+			'</div>' + 
+			'</div></div>');
+		});
+	} else {
+		$('#allitems').append('No results found');
+	}
+});
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+/*==============*/
+/* Autocomplete */
+/*==============*/
+.ui-autocomplete-loading {
+	background: white url("../../static/images/ui-anim_basic_16x16.gif") right center no-repeat;
+}
+.ui-autocomplete {
+	max-height: 200px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+/* IE 6 fix */
+* html .ui-autocomplete {
+	height: 200px;
+}
+.autocompleted-poster {
+	width: 40px;
+	float: left;
+	margin-left: 10px;
+}
+.autocompleted-title {
+	font-size: 12px;
+	min-width: 600px;
+	margin-left: 60px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+ul.ui-autocomplete li.ui-menu-item-wrapper {
+	height: 70px;
+	overflow-y: hidden;
+}
+a.ui-menu-item {
+	color: #555;
+}
+a.ui-menu-item:hover {
+	text-decoration: none;
+}
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+	border: 1px solid #003eff;
+	background: #007fff;
+	font-weight: normal;
+	color: #ffffff;
+}
+.ui-icon-background,
+.ui-state-active .ui-icon-background {
+	border: #003eff;
+	background-color: #ffffff;
+}
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+/* Autocomplete item styling overwrite */
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+	border-width: 0px;
+	background-color: #e7e7e7;
+	color: #333;
+}
+.ui-menu .ui-state-active {
+	margin: 0px;
+}
+
+
+/*=============*/
+/* Paginatiion */
+/*=============*/
+.pagination>.disabled>a,.pagination>.disabled>a:focus,.pagination>.disabled>a:hover,.pagination>.disabled>span,.pagination>.disabled>span:focus,.pagination>.disabled>span:hover {
+	cursor:inherit;
+	background-color:#fff;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+
+/*======*/
+/* Misc */
+/*======*/
+/*.thumbnail {
+	margin-bottom: 0px;
+}*/
+#selected-movie {
+	position: relative;
+	display: block;
+	padding: 10px 15px;
+	margin-bottom: -1px;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	margin-bottom: 10px;
+	height: 85px;
+	overflow-y: hidden;
+}
+.badge-seeds {
+	background-color: #09b60b;
+}
+.row {
+	margin-right: 0px;
+	margin-left: 0px;
+}
+.desc-overflow {
+	height: 60px;
+	overflow-y: hidden;
+}
+.thumbs-fixed-height {
+	height: 490px;
+}
+.btn-add {
+	font-weight: bold;
+	font-size: 100px;
+	width: 150px;
+}
+
+#movie-title {
+	width: 60%;
+	margin-bottom: 10px;
+}
+

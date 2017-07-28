@@ -1,0 +1,175 @@
+{% extends 'template.html' %}
+{% block content %}
+<h3 class="text-left">Add new movie/tv title</h3>
+
+<form id="form-add" action="/new/add_to_db/" method="post">
+
+	<div class="radio">
+		<label><input name="tvormovieGroup" id="tvormovie1" value="movies" type="radio" checked="checked">Movie</label>
+	</div>
+	<div class="radio">
+		<label><input name="tvormovieGroup" id="tvormovie2" value="tv_shows" type="radio">TV-series</label>
+	</div>
+	<div id="title-wrapper">
+		<label>Title:</label><input id="movie-title" name="movie-title" class="form-control">
+	</div>
+	<!-- <input id="movie-type" name="movie-type" type="hidden" value=""> -->
+	<input id="movie-data" name="movie-data" type="hidden" value="">
+	<input id="movie-episodes" name="movie-episodes" type="hidden" value="">
+	<input id="movie-magnet" name="movie-magnet" type="hidden" value="">
+	<input id="movie-hash" name="movie-hash" type="hidden" value="">
+	
+	<div id="selected-movie" style="display: none;"></div>
+	<div id="ret-tpb" style="display: none;"><img src="../static/spinner.gif"/></div>
+	<ul class="list-group" id="tpb"></ul>
+
+<!--
+	<div class="form-group">
+		<label>Path of the folder</label>
+		<input type="file">
+	</div>
+-->
+	<input id="movie-dir" name="movie-dir" style="display: none;" class="form-control" value="X:\Films"><br>
+	<button id="form-submit" type="submit" class="btn btn-primary disabled">Add</button>
+</form>
+
+<script>
+$(function(){
+
+	var movieURL = "http://www.theimdbapi.org/api/find/movie";
+	var tvURL = "http://api.tvmaze.com/search/shows";
+	var tvEpisodesURL = "http://api.tvmaze.com/shows/";
+
+	//var type = "{{type|safe}}";
+	$("#movie-title").autocomplete({
+		delay: 1000,
+		autoFocus: true,
+		source: function(request, response) {
+			var type = $("input[name='tvormovieGroup']:checked").val();
+			$.ajax({
+				dataType: "json",
+				cache: true,
+				url: (type == "movies") ? movieURL : tvURL,
+				data: (type == "movies") ? { title: request.term } : { q: request.term },
+				success: function(data) {
+					$("#movie-title").focus();
+					response($.map(data, function(item) {
+						return {
+							fullrecord: (type == "movies") ? item : item.show,
+							type: type,
+							value: (type == "movies") ? item.title + " [id:"+item.imdb_id+"]" : item.show.name + " [id:"+item.show.externals.imdb+"]"
+						};
+					}));
+				}
+			});
+		},
+		select: function(event, ui) {
+			//console.log(ui.item.fullrecord);
+			$("#movie-title").val(ui.value);
+			$("#movie-data").val(JSON.stringify(ui.item.fullrecord));/////////////////////////////////////
+
+			// Show movie info
+			var type = ui.item.type;
+			var title = (type == "movies") ? ui.item.fullrecord.title : ui.item.fullrecord.name;
+			var description = (type == "movies") ? ui.item.fullrecord.description : cleanString(ui.item.fullrecord.summary);
+			var poster = (type == "movies") ? ui.item.fullrecord.poster.thumb : ui.item.fullrecord.image.medium;
+			//var poster = item.fullrecord.poster.thumb;
+			if (poster == "" && type == "movies") { poster = ui.item.fullrecord.poster.large }
+
+			$("#selected-movie").html('<img class="autocompleted-poster" src="' + poster + '"><div class="autocompleted-title"><b>' + title + '</b><br>' + description + '</div>');
+			//$("#selected-movie").html('<img class="autocompleted-poster" src="' + poster + '"><div class="autocompleted-title"><b>' + ui.item.fullrecord.title + '</b><br>' + ui.item.fullrecord.description + '</div>');
+			$("#selected-movie").show();
+			//$("#movie-title").hide();
+			
+			// Show list of torrents
+			if (type == "movies") {
+				$("#ret-tpb").show();
+				$.ajax({
+					type: "GET",
+					url: "/tpb/" + ui.item.fullrecord.imdb_id,
+					dataType: "json",
+					success: function(msg) {
+						//console.log(msg);
+						$("#tpb").empty();
+						$.each(msg, function(i, v) {
+							$("#tpb").append('<li class="list-group-item"><input type="radio" name="radioButtons" id="radio' + i + '" magnet="' + v[1] + '" hash="' + v[3] + '"><span class="badge badge-seeds">' + v[2] + '</span> ' + v[0] + '</li>');
+						});
+						$("#ret-tpb").hide();
+						$("#movie-dir").show();
+					},
+					error: function (xhr, status, error) {
+						console.log(error);
+					}
+				});
+			} else {
+				$("#ret-tpb").show();
+				$.ajax({
+					dataType: "json",
+					cache: true,
+					url: tvEpisodesURL + ui.item.fullrecord.id + "/episodes",
+					success: function(data) {
+						console.log(data);//////////////////////////////////////////////////
+						$("#movie-episodes").val(JSON.stringify(data));
+						$("#ret-tpb").hide();
+						$("#form-submit").removeClass("disabled");
+						$("#movie-magnet").val("0");		  
+					}
+				});
+			}
+		},
+		
+		close: function(event, ui) {
+			if ($("#movie-title").val().indexOf("[id:") >= 0 || $("#movie-title").val() == "") {
+				$('#movie-title').autocomplete('close');
+			} else {
+				$("ul.ui-autocomplete, .ui-widget-content").filter(':hidden').show();
+			}
+		}
+	}).data("ui-autocomplete")._renderItem = function (ul, item) {
+		var type = item.type;
+		var title = (type == "movies") ? item.fullrecord.title : item.fullrecord.name;
+		var imdbid = (type == "movies") ? item.fullrecord.imdb_id : item.fullrecord.externals.imdb;
+		var year = (type == "movies") ? item.fullrecord.year : ((item.fullrecord.premiered) ? item.fullrecord.premiered.substr(0,4) : "");
+		var description = (type == "movies") ? item.fullrecord.description : cleanString(item.fullrecord.summary);
+		var poster = (type == "movies") ? item.fullrecord.poster.thumb : ((item.fullrecord.image) ? item.fullrecord.image.medium : "");
+		//var poster = item.fullrecord.poster.thumb;
+		if (poster == "" && type == "movies") { poster = item.fullrecord.poster.large }
+
+		return $("<a><li><img class='autocompleted-poster' src='" + poster + "'/><div class='autocompleted-title'><b>" + title + " (" + year + ") [id:" + imdbid + "]</b><br>" + description + "</div></li></a>").data("ui-autocomplete-item", item).appendTo(ul);
+		//return $("<a><li><img class='autocompleted-poster' src='" + poster + "'/><div class='autocompleted-title'><b>" +  item.fullrecord.title + " (" + item.fullrecord.year + ") [id:"+item.fullrecord.imdb_id+"]</b><br>"+item.fullrecord.description+"</div></li></a>").data("ui-autocomplete-item", item).appendTo(ul);
+	};
+
+
+	// Change magnet input on checkbox click
+	$("#tpb").on("change", "input[name='radioButtons']", function() {
+		$("#movie-magnet").val($(this).attr("magnet"));
+		$("#movie-hash").val($(this).attr("hash"));
+		$("#form-submit").removeClass("disabled");
+	});
+
+
+	// Allow title input on checkbox group (tvormovieGroup) click
+	//$("#form-add").on("change", "input[name='tvormovieGroup']", function() {
+	//	$("#movie-type").val($(this).val());
+	//	$("#title-wrapper").removeClass("disabled");
+	//	console.log($("#movie-type").val());
+	//});
+
+
+	// Form submit override
+	$("#form-add").submit(function(e) {
+		if ($("#movie-magnet").val() == "" || $("#movie-data").val() == "") {
+			e.preventDefault();
+			return false;
+		}
+		return true;
+	});
+
+	function cleanString(string) {
+		var result = $(string).text(); // remove html tags
+		return result.replace(/\n/g, " "); // remove line breaks
+	}
+
+});
+</script>
+{% endblock %}
