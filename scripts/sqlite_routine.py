@@ -4,6 +4,11 @@ from flask import Flask, redirect
 def array_sampling(selection, offset=0, limit=None):
 	if limit == 0: limit = None
 	return selection[offset:(limit + offset if limit is not None else None)]
+	
+def remHTML(raw):
+	tag = re.compile('<.*?>')
+	clean = re.sub(tag, '', raw)
+	return clean
 
 def json2db(jsondata, magnet, hash, folder, tv_or_movie, episodes):
 	if 'movies' in tv_or_movie:
@@ -51,12 +56,13 @@ def json2db(jsondata, magnet, hash, folder, tv_or_movie, episodes):
 		data = json.loads(jsondata)
 		episodes = json.loads(episodes)
 		imdb_id = data['externals']['imdb']
+		summary_s = remHTML(data['summary'].replace('"',''))
 		
 		# add a tv-show
 		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,img_big,img_small) VALUES("'
 			+ imdb_id + '","'
 			+ str(data['name']) + '","'
-			+ data['summary'] + '","'
+			+ summary_s + '","'
 			+ data['premiered'][:4] + '","'
 			+ str(data['rating']['average']) + '","'
 			+ ('http://www.imdb.com/title/%s/' % (imdb_id)) + '","'
@@ -72,7 +78,7 @@ def json2db(jsondata, magnet, hash, folder, tv_or_movie, episodes):
 			if ep['summary'] is None:
 				summary = 'missing'
 			else:
-				summary = ep['summary'].replace('"','')
+				summary = remHTML(ep['summary'].replace('"',''))
 			
 			c.execute('INSERT INTO tv_shows_episodes(tv_show_id,se_num,ep_num,title,description,airdate,screenshot) VALUES("'
 				+ imdb_id + '",'

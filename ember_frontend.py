@@ -9,7 +9,7 @@
 
 # Initialisation
 import json, math
-from scripts import tpb_search, sqlite_routine, deluge_routine, scan_folder
+from scripts import tpb_search, eztv_search, sqlite_routine, deluge_routine, scan_folder
 from flask import Flask, request, render_template, json, jsonify
 app = Flask(__name__)
 
@@ -55,11 +55,6 @@ def search_items(page):
 def new():
 	return render_template('new.html')
 
-# Scan folders for movies and tv-series
-@app.route('/scan/', methods=['GET'])
-def scan():
-	return scan_folder.scan("E:\TV-Series\A Bit Of Fry & Laurie")
-
 # Import - add to database
 @app.route('/new/add_to_db/', methods=['POST'])
 def add_to_db():
@@ -76,8 +71,25 @@ def add_to_db():
 	
 	return unit_data
 
-# Import - search on tpb
-@app.route('/tpb/<string:imdb_id>/', methods=['GET','POST'])
-def tpb(imdb_id):
-	data = tpb_search.getTopRes(imdb_id);
+# Scan folders for movies and tv-series - form
+@app.route('/scan/', methods=['GET','POST'])
+def scan():
+	return render_template('scan.html')
+
+# Scan folders for movies and tv-series - ajax
+@app.route('/scan/scan_folder/', methods=['GET','POST'])
+def scan_folder():
+	path = request.form["folder-to-search"]
+	return scan_folder.scan(path)
+
+# Search on tpb
+@app.route('/tpb/<string:query>/', methods=['GET','POST'])
+def tpb(query):
+	data = tpb_search.getTopRes(query)
+	return data
+	
+# Search on eztv
+@app.route('/eztv/<string:query>/', methods=['GET','POST'])
+def eztv(query):
+	data = eztv_search.getTopRes(query)
 	return data

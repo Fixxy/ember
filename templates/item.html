@@ -6,6 +6,30 @@
 </div>
 <script>
 
+function getData(button_id, service, se, ep, title) {
+	$(button_id + se + ep).on('click', function(){
+	$('#torList' + se + ep).empty();
+	$('#torLoad' + se + ep).show();
+		$.ajax({
+			type: 'GET',
+			url: '/' + service + '/S' + se + 'E' + ep + ' ' + title,
+			dataType: 'json',
+			success: function(msg) {
+				$.each(msg, function(i, v) {
+					$('#torList' + se + ep).append('<li class="list-group-item"><input type="radio" name="radioButtons" id="radio' + i + '" magnet="' + v[1] + '" hash="' + v[3] + '"><span class="badge badge-seeds">' + v[2] + '</span> ' + v[0] + '</li>');
+					//console.log('each: ' + i + '' + v)
+				});
+				$('#torLoad' + se + ep).hide();
+				$('#torList' + se + ep).show();
+			},
+			error: function (xhr, status, error) {
+				console.log(error);
+			}
+		});
+	});
+    return;
+}
+
 $(function() {
 	var data = {{data|safe}};
 	var epdata = {{epdata|safe}};
@@ -21,8 +45,7 @@ $(function() {
 	'<div><b>URL:</b> ' + data[0]["url"] + '</div>' +
 	'<div><b>Hash:</b> ' + data[0]["hash"] + '</div>');
 	
-	//console.log(epdata);
-	if (table == "tv_shows") {
+	if (table == 'tv_shows') {
 		$('#data').append('<div><b>Episodes:</b></div><div class="panel-group" id="accordion">');
 		if (epdata[0] != null) {
 			$.each(epdata, function(i, v) { // for each entry
@@ -34,7 +57,17 @@ $(function() {
 									'<strong>S' + se + 'E' + ep + ' | ' + v["title"] + '</strong>' +
 									'</a></h3></div><div id="collapse' + i + '" class="panel-collapse collapse">' +
 									'<div class="panel-body"><img width="300px" src="' + v["screenshot"] + '"/>' +
-									'</br></br><div class="well well-sm">' + v["description"] + '</div></div></div></div>')
+									'</br></br><div class="well well-sm">' + v["description"] + '</div>' +
+									'<button id="tpbsearch' + se + ep + '" name="tpbsearch" type="button" class="btn btn-warning">Search on TPB</button>' +
+									'<button id="eztvsearch' + se + ep + '" name="eztvsearch" type="button" class="btn btn-primary">Search on EZTV</button>' +
+									'</div><div id="torLoad' + se + ep + '" style="display: none;">' +
+									'<img src="../../static/spinner.gif"/></div>' +
+									'<ul class="list-group" id="torList' + se + ep + '"></ul>' +
+									'</div></div>')
+				
+				getData('#tpbsearch', 'tpb', se, ep, data[0]["title"]);
+				getData('#eztvsearch', 'eztv', se, ep, data[0]["title"]);
+
 			});
 		} else {
 			$('#data').append('No episodes available</div>');

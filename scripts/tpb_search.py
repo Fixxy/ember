@@ -12,9 +12,9 @@ def returnHTML(url):
 	html = response.read()
 	return html
 	
-def getTopRes(id):
+def getTopRes(data):
 	list = []
-	url = 'https://thepiratebay.org/s/?q=' + str(id) + '&video=on&category=0&page=0&orderby=7'
+	url = 'https://thepiratebay.org/s/?q=' + str(data) + '&video=on&category=0&page=0&orderby=7'
 	tpbResults = returnHTML(url)
 	
 	soup = BeautifulSoup(tpbResults, 'html.parser')

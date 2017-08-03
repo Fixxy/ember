@@ -4,8 +4,8 @@ import os, re, json, PTN, requests, urllib
 
 api_imdb = "http://www.imdb.com/xml/find?json=1&nr=1&tt=on&q="
 #api_movies = "http://www.theimdbapi.org/api/movie?movie_id="
-api_movies = "https://moviesapi.com/m.php?type=movie&r=json&i="
-api_tv_shows = "http://api.tvmaze.com/lookup/shows?imdb="
+##api_movies = "https://moviesapi.com/m.php?type=movie&r=json&i="
+#api_tv_shows = "http://api.tvmaze.com/lookup/shows?imdb="
 
 def cleanData(data):
 	tags = ['\n', '\r', '<[^>]+>']
@@ -30,12 +30,12 @@ def imdbJSONResponse(title, type, cache, limit):
 			if (title_type in json_data):
 				for item in json_data[title_type]:
 					if item["id"] not in result:
-						if (len(result) < limit): # add if array size smaller than 5
-							#tt_url = api_movies if (type == "movies") else api_tv_shows
-							#tt_data = JSONReponse(tt_url + item["id"])
-							tt_url = api_movies + item["id"].replace("tt","") if (type == "movies") else api_tv_shows + item["id"]
-							tt_data = JSONReponse(tt_url)
-							if (tt_data and tt_data != ""): result.append(json.loads(tt_data))
+						if (len(result) < limit): # add if array size is smaller than 5
+							#tt_url = api_movies + item["id"].replace("tt","") if (type == "movies") else api_tv_shows + item["id"]
+							#tt_url = api_movies + item["id"] if (type == "movies") else api_tv_shows + item["id"]
+							#tt_data = JSONReponse(tt_url)
+							#if (tt_data and tt_data != ""): result.append(json.loads(tt_data))
+							result.append(item["id"])
 		cache[title] = result
 	return result
 
