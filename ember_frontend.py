@@ -8,9 +8,9 @@
 # flask run --host=0.0.0.0 // open to entire network
 
 # Initialisation
-import json, math
+import json, math, os
 from scripts import tpb_search, eztv_search, sqlite_routine, deluge_routine, scan_folder
-from flask import Flask, request, render_template, json, jsonify
+from flask import Flask, Response, request, render_template, json, jsonify
 app = Flask(__name__)
 
 # Main page
@@ -76,11 +76,16 @@ def add_to_db():
 def scan():
 	return render_template('scan.html')
 
-# Scan folders for movies and tv-series - ajax
+# Scan folders for movies and tv-series - xhr
 @app.route('/scan/scan_folder/', methods=['GET','POST'])
-def scan_folder():
+def scan_folder_request():
 	path = request.form["folder-to-search"]
-	return scan_folder.scan(path)
+	def generate():
+		for root, dirs, files in os.walk(path):
+			for name in files:
+				yield scan_folder.scan(root, name)
+	return Response(generate(), mimetype='text/plain')
+	#return scan_folder.scan(path)
 
 # Search on tpb
 @app.route('/tpb/<string:query>/', methods=['GET','POST'])
