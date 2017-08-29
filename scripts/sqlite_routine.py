@@ -59,7 +59,7 @@ def json2db(jsondata, magnet, hash, folder, tv_or_movie, episodes):
 		summary_s = remHTML(data['summary'].replace('"',''))
 		
 		# add a tv-show
-		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,img_big,img_small) VALUES("'
+		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,img_big,img_small,status) VALUES("'
 			+ imdb_id + '","'
 			+ str(data['name']) + '","'
 			+ summary_s + '","'
@@ -67,7 +67,21 @@ def json2db(jsondata, magnet, hash, folder, tv_or_movie, episodes):
 			+ str(data['rating']['average']) + '","'
 			+ ('http://www.imdb.com/title/%s/' % (imdb_id)) + '","'
 			+ data['image']['original'] + '","'
-			+ data['image']['medium'] + '");')
+			+ data['image']['medium'] + '","'
+			+ data['status'] + '");')
+			
+		# add to the watchlist if currently running
+		nextEpisode = ''
+		try:
+			nextEpisode = data['_links']['nextepisode']
+		except KeyError:
+			pass
+
+		if ('Running' in data['status'] and nextEpisode != ''):
+			c.execute('INSERT INTO watchlist (tv_show_id, time, day) VALUES("'
+				+ imdb_id + '","'
+				+ data['schedule']['time'] + '","'
+				+ data['schedule']['days'][0] + '");')
 			
 		for ep in episodes:
 			#prechecks, in case summary or image are missing

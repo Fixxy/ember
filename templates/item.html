@@ -42,11 +42,11 @@ $(function() {
 	'<div><b>Description:</b> ' + data[0]["description"] + '</div>' + 
 	'<div><b>Rating:</b> ' + data[0]["rating"] + '</div>' + 
 	'<div><b>Director:</b> ' + data[0]["director"] + '</div>' + 
-	'<div><b>URL:</b> ' + data[0]["url"] + '</div>' +
-	'<div><b>Hash:</b> ' + data[0]["hash"] + '</div>');
-	
+	'<div><b>URL:</b> ' + data[0]["url"] + '</div>');
+
 	if (table == 'tv_shows') {
-		$('#data').append('<div><b>Episodes:</b></div><div class="panel-group" id="accordion">');
+	$('#data').append('<div><b>status:</b> ' + data[0]["status"] + '</div>');
+		$('#data').append('<div class="panel-group" id="accordion">');
 		if (epdata[0] != null) {
 			$.each(epdata, function(i, v) { // for each entry
 				var se = v["se_num"]; var ep = v["ep_num"];
@@ -73,6 +73,8 @@ $(function() {
 			$('#data').append('No episodes available</div>');
 		}
 		$('#data').append('</div>');
+	} else {
+		$('#data').append('<div><b>hash:</b> ' + data[0]["hash"] + '</div>');
 	}
 });
 

@@ -52,6 +52,7 @@ $(function(){
 				url: (type == "movies") ? movieURL : tvURL,
 				data: (type == "movies") ? { title: request.term } : { q: request.term },
 				success: function(data) {
+					//console.log(data);
 					$("#movie-title").focus();
 					response($.map(data, function(item) {
 						return {
