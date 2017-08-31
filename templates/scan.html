@@ -2,34 +2,115 @@
 {% block content %}
 <h3 class="text-left">Scan local folder for media files</h3>
 <input id="folder-to-search" name="folder-to-search" value="D:\Movies">
-<button id="form-submit" type="submit" class="btn btn-primary">Scan</button>
-<ul id="output"></ul>
+<input id="movie-data" name="movie-data" type="hidden" value="">
+<button id="form-scan" type="submit" class="btn btn-primary">Scan</button>
+<div id="scanned-output"></div>
+<button id="form-submit" style="display: none;" type="submit" class="btn btn-primary">Add</button>
 
 <script>
 $(function(){
-	// https://stackoverflow.com/questions/31948285/display-data-streamed-from-a-flask-view-as-it-updates
-	$("#form-submit").click(function(){
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", "/scan/scan_folder/", true);
-		xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhr.send("folder-to-search=" + $("#folder-to-search").val());
-		var position = 0;
-		var timer = setInterval(function() {
-			processResponse();
-			if (xhr.readyState == XMLHttpRequest.DONE) {
-				clearInterval(timer);
-				$("#output").append("<li>Done</li>");
-				alert("Done!");
+	var scanned = 0;
+	function removeQuotes(string) {
+		result = string.replace(/'/g, "&#39;");
+		return result;
+	}
+	
+	$("#form-scan").click(function() {
+		if (scanned == 0) {
+			scanned = 1;
+			$("#form-scan").hide();
+			$("#loader").show();
+			//$("#form-scan").addClass("disabled");
+			//$("#form-submit").addClass("disabled");
+			$("#scanned-output").empty();
+			// https://stackoverflow.com/questions/31948285/display-data-streamed-from-a-flask-view-as-it-updates
+			var xhr = new XMLHttpRequest();
+			xhr.open("POST", "/scan/scan_folder/", true);
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhr.send("folder-to-search=" + $("#folder-to-search").val());
+			var position = 0;
+			var timer = setInterval(function() {
+				processResponse();
+				if (xhr.readyState == XMLHttpRequest.DONE) {
+					clearInterval(timer);
+					scanned = 0;
+					//$("#form-scan").removeClass("disabled");
+					//$("#form-submit").removeClass("disabled");
+					//$("#form-scan").hide();
+					$("#loader").hide();
+					$("#form-submit").show();
+				}
+			}, 1000);
+			function processResponse() {
+				var messages = xhr.responseText.split('\n');
+				$.each(messages.slice(position, -1), function(i, value) {
+					if (value != "") {
+						var json = JSON.parse(value);
+						console.log(json);
+						var found_on_imdb = "";
+						$.each(json.found_on_imdb, function(j, item) {
+							var disabledInput = (item.exists > 0) ? "disabled" : "";
+							var disabledMessage = (item.exists > 0) ? "<div style='margin-left:75px;font-weight:bold;'>Already in the database</div>" : "";
+							var disabledClass = (item.exists > 0) ? "scanned-disabled" : "";
+							if (json.type == "movies") {
+								var poster = (item.poster.thumb != "") ? item.poster.thumb : item.poster.large;
+								found_on_imdb = found_on_imdb + "<li><input type='radio' id='" + item.imdb_id + "' name='radioButtons" + position + "' " + disabledInput + " value='" + removeQuotes(JSON.stringify(item)) + "'><img class='scanned-poster' src='" + poster + "'/>" + disabledMessage + "<div class='scanned-title " + disabledClass + "'><b>" + item.title + " (" + item.year + ") [id:" + item.imdb_id + "]</b><br>" + item.description + "</div></li>";
+							} else {
+								var poster = (item.image.medium != "") ? item.image.medium : item.image.original;
+								found_on_imdb = found_on_imdb + "<li><input type='radio' id='tt" + item.externals.imdb + "' name='radioButtons" + position + "' " + disabledInput + " value='" + removeQuotes(JSON.stringify(item)) + "'><img class='scanned-poster' src='" + poster + "'/>" + disabledMessage + "<div class='scanned-title " + disabledClass + "'><b>" + item.name + " (" + item.premiered.substring(0,4) + ") [id:" + item.externals.imdb.replace("tt","") + "]</b><br>" + item.summary + "</div></li>";
+							}
+						});
+						if (json.type == "movies") {
+							$("#scanned-output").append("<div>" + json.title + " (Movie)</div><ul>" + found_on_imdb + "</ul>");
+						} else {
+							$("#scanned-output").append("<div>" + json.title.replace(/\.$/,"") + ". Season " + json.season + ", Episode " + json.episode + " (TV-series)</div><ul>" + found_on_imdb + "</ul>");
+						}
+					}
+				});
+				position = messages.length - 1;
 			}
-		}, 1000);
-		function processResponse() {
-			var messages = xhr.responseText.split('\n');
-			messages.slice(position, -1).forEach(function(value) {
-				$("#output").append("<li>" + value + "</li>");
-			});
-			position = messages.length - 1;
 		}
 	});
+
+	$("#form-submit").click(function() {
+		$("#loader").show();
+		var disabledMessage = "<div style='margin-left:75px;font-weight:bold;'>Already in the database</div>";
+		$('input[name^=radioButtons]:radio:checked').each(function() {
+			var json = JSON.parse($(this).val());
+			//console.log(json);
+			$.ajax({
+				type: 'POST',
+				url: "/new/add_to_db/",
+				//dataType: "json",
+				cache: true,
+				data: {
+					"movie-data" : $(this).val(),
+					"movie-magnet" : "",
+					"movie-hash" : "",
+					"movie-dir" : String(json["path"]),
+					"tvormovieGroup" : String(json["type"]),
+					"movie-episodes" : (json["type"] == "movies") ? "" : String(json["episodes"]),
+					"redirect" : "0"
+				},
+				success: function(data) {
+					$('input#'+data).siblings(".scanned-title").before(disabledMessage);
+					$('input#'+data).attr('disabled',true);
+					$('input#'+data).attr('checked',false);
+					$("#loader").hide();
+					//$('input#'+data).prop('disabled', true);
+					//$('input#'+data).prop('checked', false);
+					//console.log(data);
+					//console.log('input#'+data);
+				},
+				error: function(xhr, status, error){
+					alert("Error: " + String(error));
+					console.log(status);
+					console.log(String(error));
+				}
+			});
+		});
+	});
+
 });
 </script>
 {% endblock %}

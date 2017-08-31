@@ -18,6 +18,7 @@
 	<input id="movie-episodes" name="movie-episodes" type="hidden" value="">
 	<input id="movie-magnet" name="movie-magnet" type="hidden" value="">
 	<input id="movie-hash" name="movie-hash" type="hidden" value="">
+	<input id="redirect" name="redirect" type="hidden" value="1">
 	
 	<div id="selected-movie" style="display: none;"></div>
 	<div id="ret-tpb" style="display: none;"><img src="../static/spinner.gif"/></div>
@@ -29,7 +30,7 @@
 		<input type="file">
 	</div>
 -->
-	<input id="movie-dir" name="movie-dir" style="display: none;" class="form-control" value="X:\Films"><br>
+	<input id="movie-dir" name="movie-dir" style="display: none;" class="form-control" value=""><br>
 	<button id="form-submit" type="submit" class="btn btn-primary disabled">Add</button>
 </form>
 
@@ -147,6 +148,11 @@ $(function(){
 		$("#movie-hash").val($(this).attr("hash"));
 		$("#form-submit").removeClass("disabled");
 	});
+	
+	$("#movie-dir").change(function() {
+		if ($(this).val() != "") { $("#form-submit").removeClass("disabled"); }
+	});
+	
 
 
 	// Allow title input on checkbox group (tvormovieGroup) click
@@ -159,7 +165,7 @@ $(function(){
 
 	// Form submit override
 	$("#form-add").submit(function(e) {
-		if ($("#movie-magnet").val() == "" || $("#movie-data").val() == "") {
+		if (($("#movie-dir").val() == "" && $("#movie-magnet").val() == "") || $("#movie-data").val() == "") {
 			e.preventDefault();
 			return false;
 		}

@@ -63,12 +63,11 @@ def add_to_db():
 										request.form['movie-hash'],
 										request.form['movie-dir'],
 										request.form['tvormovieGroup'],
-										request.form['movie-episodes'])
-										
+										request.form['movie-episodes'],
+										request.form['redirect'])
 	if 'movies' in request.form['tvormovieGroup']:
 		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], request.form['movie-dir']) # download via deluge
 		sqlite_routine.set_dir(request.form['movie-dir'], path, request.form['movie-hash'])
-	
 	return unit_data
 
 # Scan folders for movies and tv-series - form
