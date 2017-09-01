@@ -14,7 +14,7 @@ $(function(){
 		result = string.replace(/'/g, "&#39;");
 		return result;
 	}
-	
+
 	$("#form-scan").click(function() {
 		if (scanned == 0) {
 			scanned = 1;
@@ -57,7 +57,7 @@ $(function(){
 								found_on_imdb = found_on_imdb + "<li><input type='radio' id='" + item.imdb_id + "' name='radioButtons" + position + "' " + disabledInput + " value='" + removeQuotes(JSON.stringify(item)) + "'><img class='scanned-poster' src='" + poster + "'/>" + disabledMessage + "<div class='scanned-title " + disabledClass + "'><b>" + item.title + " (" + item.year + ") [id:" + item.imdb_id + "]</b><br>" + item.description + "</div></li>";
 							} else {
 								var poster = (item.image.medium != "") ? item.image.medium : item.image.original;
-								found_on_imdb = found_on_imdb + "<li><input type='radio' id='tt" + item.externals.imdb + "' name='radioButtons" + position + "' " + disabledInput + " value='" + removeQuotes(JSON.stringify(item)) + "'><img class='scanned-poster' src='" + poster + "'/>" + disabledMessage + "<div class='scanned-title " + disabledClass + "'><b>" + item.name + " (" + item.premiered.substring(0,4) + ") [id:" + item.externals.imdb.replace("tt","") + "]</b><br>" + item.summary + "</div></li>";
+								found_on_imdb = found_on_imdb + "<li><input type='radio' id='" + item.externals.imdb + "' name='radioButtons" + position + "' " + disabledInput + " value='" + removeQuotes(JSON.stringify(item)) + "'><img class='scanned-poster' src='" + poster + "'/>" + disabledMessage + "<div class='scanned-title " + disabledClass + "'><b>" + item.name + " (" + item.premiered.substring(0,4) + ") [id:" + item.externals.imdb.replace("tt","") + "]</b><br>" + item.summary + "</div></li>";
 							}
 						});
 						if (json.type == "movies") {
@@ -74,9 +74,17 @@ $(function(){
 
 	$("#form-submit").click(function() {
 		$("#loader").show();
-		var disabledMessage = "<div style='margin-left:75px;font-weight:bold;'>Already in the database</div>";
+		var disabledMessage = "<div style='margin-left:75px;font-weight:bold;color:#24ce32;'>Added to the database</div>";
 		$('input[name^=radioButtons]:radio:checked').each(function() {
 			var json = JSON.parse($(this).val());
+			var episodes = {};
+			jQuery.map(json["episodes"], function(obj) { // find specific episode
+				if (obj["season"] === json["season"] && obj["number"] === json["episode"]) {
+					//console.log(obj)
+					//episodes.push(obj);
+					episodes = obj;
+				}
+			});
 			//console.log(json);
 			$.ajax({
 				type: 'POST',
@@ -87,9 +95,9 @@ $(function(){
 					"movie-data" : $(this).val(),
 					"movie-magnet" : "",
 					"movie-hash" : "",
-					"movie-dir" : String(json["path"]),
-					"tvormovieGroup" : String(json["type"]),
-					"movie-episodes" : (json["type"] == "movies") ? "" : String(json["episodes"]),
+					"movie-dir" : json["path"],
+					"tvormovieGroup" : json["type"],
+					"movie-episodes" : (json["type"] == "movies") ? "" : "[" + JSON.stringify(episodes) + "]",
 					"redirect" : "0"
 				},
 				success: function(data) {

@@ -41,6 +41,8 @@ def imdbJSONResponse(path, title, type, season, episode, cache, limit):
 								tt_data_json["exists"] = sqlite_routine.check_in_db(item["id"], type, str(season), str(episode))
 								tt_data_json["path"] = path
 								tt_data_json["type"] = type
+								tt_data_json["season"] = season
+								tt_data_json["episode"] = episode
 								# get episodes if getting a tv-show
 								if (type == "tv_shows"):
 									tt_data_ep = JSONReponse(api_tv_shows_episodes + str(tt_data_json["id"]) + "/episodes")
