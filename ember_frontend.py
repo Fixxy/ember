@@ -10,20 +10,20 @@
 # Initialisation
 import configparser, json, math, os
 from scripts import tpb_search, eztv_search, sqlite_routine, deluge_routine, scan_folder
-from flask import Flask, Response, request, render_template, json, jsonify
+from flask import Flask, Response, request, render_template, json, jsonify, send_from_directory
 app = Flask(__name__)
 
 # Parsing config file
 config = configparser.ConfigParser()
 config.read('ember.config')
-movie_dir = config['folders']['media']
+media_dir = config['folders']['media']
 
 # Main page
 @app.route('/')
 def index():
 	latest_tvshows, temp = sqlite_routine.db2json("tv_shows","",0,6)
 	latest_movies, temp = sqlite_routine.db2json("movies","",0,6)
-	return render_template('index.html', data_tv=latest_tvshows, data_movies=latest_movies)
+	return render_template('index.html', data_tv=latest_tvshows, data_movies=latest_movies, media_url=media_url)
 
 # Show specific movie
 @app.route('/item/<string:table>/<string:imdb_id>', methods=['GET'])
@@ -70,7 +70,7 @@ def add_to_db():
 										request.form['movie-episodes'],
 										request.form['redirect'])
 	if 'movies' in request.form['tvormovieGroup']:
-		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], movie_dir) # download via deluge
+		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], media_dir) # download via deluge
 		sqlite_routine.set_dir(path, request.form['movie-hash'])
 	
 	return unit_data
@@ -102,3 +102,8 @@ def tpb(query):
 def eztv(query):
 	data = eztv_search.getTopRes(query)
 	return data
+	
+# cdn
+@app.route('/media/<path:filename>')
+def media_file(filename):
+    return send_from_directory(media_dir, filename)

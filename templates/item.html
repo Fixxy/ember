@@ -76,6 +76,8 @@ $(function() {
 	} else {
 		$('#data').append('<div><b>hash:</b> ' + data[0]["hash"] + '</div>');
 	}
+	
+	$('#data').append('<video width="800" controls><source src="..\\..\\media\\' + data[0]["folder"] + '" type="video/mp4">Your browser does not support HTML5 video.</video>');
 });
 
 </script>
