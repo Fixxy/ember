@@ -15,6 +15,7 @@ def returnHTML(url):
 def getTopRes(data):
 	cleanString = re.sub('\W+','-', data) #remove special characters
 	query = cleanString.replace(' ','-') #replace spaces with '-'
+	print(query)
 	url = ('https://eztv.ag/search/%s' % query)
 	searchResults = returnHTML(url)
 	

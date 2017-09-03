@@ -30,7 +30,6 @@
 		<input type="file">
 	</div>
 -->
-	<input id="movie-dir" name="movie-dir" style="display: none;" class="form-control" value=""><br>
 	<button id="form-submit" type="submit" class="btn btn-primary disabled">Add</button>
 </form>
 
@@ -97,7 +96,6 @@ $(function(){
 							$("#tpb").append('<li class="list-group-item"><input type="radio" name="radioButtons" id="radio' + i + '" magnet="' + v[1] + '" hash="' + v[3] + '"><span class="badge badge-seeds">' + v[2] + '</span> ' + v[0] + '</li>');
 						});
 						$("#ret-tpb").hide();
-						$("#movie-dir").show();
 					},
 					error: function (xhr, status, error) {
 						console.log(error);
@@ -148,12 +146,6 @@ $(function(){
 		$("#movie-hash").val($(this).attr("hash"));
 		$("#form-submit").removeClass("disabled");
 	});
-	
-	$("#movie-dir").change(function() {
-		if ($(this).val() != "") { $("#form-submit").removeClass("disabled"); }
-	});
-	
-
 
 	// Allow title input on checkbox group (tvormovieGroup) click
 	//$("#form-add").on("change", "input[name='tvormovieGroup']", function() {
@@ -165,7 +157,7 @@ $(function(){
 
 	// Form submit override
 	$("#form-add").submit(function(e) {
-		if (($("#movie-dir").val() == "" && $("#movie-magnet").val() == "") || $("#movie-data").val() == "") {
+		if ($("#movie-magnet").val() == "" || $("#movie-data").val() == "") {
 			e.preventDefault();
 			return false;
 		}

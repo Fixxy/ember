@@ -8,10 +8,15 @@
 # flask run --host=0.0.0.0 // open to entire network
 
 # Initialisation
-import json, math, os
+import configparser, json, math, os
 from scripts import tpb_search, eztv_search, sqlite_routine, deluge_routine, scan_folder
 from flask import Flask, Response, request, render_template, json, jsonify
 app = Flask(__name__)
+
+# Parsing config file
+config = configparser.ConfigParser()
+config.read('ember.config')
+movie_dir = config['folders']['media']
 
 # Main page
 @app.route('/')
@@ -61,13 +66,13 @@ def add_to_db():
 	unit_data = sqlite_routine.json2db( request.form['movie-data'],
 										request.form['movie-magnet'],
 										request.form['movie-hash'],
-										request.form['movie-dir'],
 										request.form['tvormovieGroup'],
 										request.form['movie-episodes'],
 										request.form['redirect'])
 	if 'movies' in request.form['tvormovieGroup']:
-		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], request.form['movie-dir']) # download via deluge
-		sqlite_routine.set_dir(request.form['movie-dir'], path, request.form['movie-hash'])
+		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], movie_dir) # download via deluge
+		sqlite_routine.set_dir(path, request.form['movie-hash'])
+	
 	return unit_data
 
 # Scan folders for movies and tv-series - form

@@ -1,9 +1,13 @@
 import json, time
 from deluge_client import DelugeRPCClient
 
+video_formats = ('.webm', '.mkv', '.flv', '.avi', '.mov', '.wmv', '.mp4')
+
 def dwnTorrent(magnet, hash, dir):
-	client = DelugeRPCClient('127.0.0.1', 58846, 'localclient', 'ea721c8753060acee794819a83ffafce544a18f3') #home pc
-	#client = DelugeRPCClient('127.0.0.1', 58846, 'localclient', '813725b1fb8a18f15f8c9e36224347fb6d37e538') #pc at work
+	#home pc
+	client = DelugeRPCClient('127.0.0.1', 58846, 'localclient', 'ea721c8753060acee794819a83ffafce544a18f3') 
+	#pc at work
+	#client = DelugeRPCClient('127.0.0.1', 58846, 'localclient', '813725b1fb8a18f15f8c9e36224347fb6d37e538') 
 	
 	# let's see if we can connect to the deluge daemon
 	try:
@@ -25,8 +29,12 @@ def dwnTorrent(magnet, hash, dir):
 		while not (client.call('core.get_torrent_status', hash, [])[b'files']):
 			time.sleep(2)
 		else:
-			path = client.call('core.get_torrent_status', hash, [])[b'files'][0][b'path']
-			path = path.replace(b'/',b'\\').decode('utf-8')
+			files = client.call('core.get_torrent_status', hash, [])[b'files']
+			
+			for format in video_formats:
+				for file in files:
+					if format in file[b'path'].decode('utf-8'):
+						path = file[b'path'].replace(b'/',b'\\').decode('utf-8')
 	
 	client.disconnect()
 	return path
