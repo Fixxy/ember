@@ -16,14 +16,15 @@ app = Flask(__name__)
 # Parsing config file
 config = configparser.ConfigParser()
 config.read('ember.config')
-media_dir = config['folders']['media']
+folders = config['folders']['media'].replace('\\','\\\\').split(';')
+media_dir = ''
 
 # Main page
 @app.route('/')
 def index():
 	latest_tvshows, temp = sqlite_routine.db2json("tv_shows","",0,6)
 	latest_movies, temp = sqlite_routine.db2json("movies","",0,6)
-	return render_template('index.html', data_tv=latest_tvshows, data_movies=latest_movies, media_url=media_url)
+	return render_template('index.html', data_tv=latest_tvshows, data_movies=latest_movies)
 
 # Show specific movie
 @app.route('/item/<string:table>/<string:imdb_id>', methods=['GET'])
@@ -58,14 +59,17 @@ def search_items(page):
 # Import - show form
 @app.route('/new/', methods=['GET'])
 def new():
-	return render_template('new.html')
+	return render_template('new.html', folders=folders)
 
 # Import - add to database
 @app.route('/new/add_to_db/', methods=['POST'])
 def add_to_db():
+	global media_dir
+	media_dir = request.form['media-dir'].strip()
 	unit_data = sqlite_routine.json2db( request.form['movie-data'],
 										request.form['movie-magnet'],
 										request.form['movie-hash'],
+										media_dir,
 										request.form['tvormovieGroup'],
 										request.form['movie-episodes'],
 										request.form['redirect'])
@@ -104,6 +108,13 @@ def eztv(query):
 	return data
 	
 # cdn
-@app.route('/media/<path:filename>')
-def media_file(filename):
-    return send_from_directory(media_dir, filename)
+@app.route('/media/<string:imdb_id>/<path:filename>')
+def media_file(imdb_id, filename):
+	main_folder = sqlite_routine.get_main_folder(imdb_id)
+	return send_from_directory(main_folder, filename)
+	
+# get download progress from deluge
+@app.route('/progress/<string:hash>')
+def deluge_progress(hash):
+	progress = deluge_routine.get_progress(hash)
+	return progress

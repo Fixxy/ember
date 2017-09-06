@@ -15,7 +15,7 @@ def remHTML(raw):
 	return clean
 
 
-def json2db(jsondata, magnet, hash, tv_or_movie, episodes, redirectflag):
+def json2db(jsondata, magnet, hash, folder_main, tv_or_movie, episodes, redirectflag):
 	if 'movies' in tv_or_movie:
 		db = sqlite3.connect(dbfile)
 		c = db.cursor()
@@ -38,9 +38,9 @@ def json2db(jsondata, magnet, hash, tv_or_movie, episodes, redirectflag):
 		
 		# Add movie
 		# Create new row if it doesn't exist
-		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,length,director,cast,img_big,img_small,magnet,hash) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (data['imdb_id'], data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, data['imdb_id']))
+		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,length,director,cast,img_big,img_small,magnet,hash,folder_main) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (data['imdb_id'], data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, data['imdb_id']))
 		# Try to update row if it already exists
-		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, length=?, director=?, cast=?, img_big=?, img_small=?, magnet=coalesce(?,magnet), hash=coalesce(?,hash) WHERE imdb_id=?', (data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, data['imdb_id']))
+		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, length=?, director=?, cast=?, img_big=?, img_small=?, magnet=coalesce(?,magnet), hash=coalesce(?,hash), folder_main=coalesce(?,folder_main) WHERE imdb_id=?', (data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, data['imdb_id']))
 		db.commit()
 		db.close()
 	else: # if it's a tv-show
@@ -92,8 +92,8 @@ def json2db(jsondata, magnet, hash, tv_or_movie, episodes, redirectflag):
 			#	+ summary + '","'
 			#	+ ep['airdate'] + '","'
 			#	+ image + '");')
-			c.execute('INSERT INTO tv_shows_episodes(tv_show_id,se_num,ep_num,title,description,airdate,screenshot) SELECT ?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM tv_shows_episodes WHERE tv_show_id=? AND se_num=? AND ep_num=?)', (imdb_id, str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, imdb_id, str(ep['season']), str(ep['number'])))
-			c.execute('UPDATE tv_shows_episodes SET se_num=?, ep_num=?, title=?, description=?, airdate=?, screenshot=? WHERE tv_show_id=? AND se_num=? AND ep_num=?', (str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, imdb_id, str(ep['season']), str(ep['number'])))
+			c.execute('INSERT INTO tv_shows_episodes(tv_show_id,se_num,ep_num,title,description,airdate,screenshot,folder_main) SELECT ?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM tv_shows_episodes WHERE tv_show_id=? AND se_num=? AND ep_num=?)', (imdb_id, str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder_main, imdb_id, str(ep['season']), str(ep['number'])))
+			c.execute('UPDATE tv_shows_episodes SET se_num=?, ep_num=?, title=?, description=?, airdate=?, screenshot=?, folder_main=coalesce(?,folder_main) WHERE tv_show_id=? AND se_num=? AND ep_num=?', (str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder_main, imdb_id, str(ep['season']), str(ep['number'])))
 
 		db.commit()
 		db.close()
@@ -201,8 +201,7 @@ def check_in_db(imdb_id, type, season, episode):
 def number_of_rows_all(table):
 	db = sqlite3.connect(dbfile)
 	c = db.cursor()
-	query = 'SELECT Count(*) FROM ' + str(table)
-	c.execute(query)
+	c.execute('SELECT Count(*) FROM ' + str(table))
 	row = c.fetchone()
 	db.close()
 	return row[0]
@@ -216,3 +215,15 @@ def set_dir(dir, hash):
 		db.commit()
 		db.close()
 	return
+	
+	
+# add new media folders
+def get_main_folder(imdb_id):
+	if imdb_id is not None:
+		db = sqlite3.connect(dbfile)
+		c = db.cursor()
+		c.execute('SELECT folder_main FROM movies WHERE imdb_id="%s" AND folder_main IS NOT NULL AND folder!=""' % (imdb_id))
+		row = c.fetchone()
+		db.commit()
+		db.close()
+		return row[0]

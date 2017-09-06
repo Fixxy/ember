@@ -1,6 +1,6 @@
 {% extends 'template.html' %}
 {% block content %}
-<div class="row">
+<div id="main" class="row">
 	<div id="cover" class="col-md-3"></div>
 	<div id="data" class="col-md-9"></div>
 </div>
@@ -37,33 +37,38 @@ $(function() {
 	$('#cover').empty();
 	$('#cover').append('<div class="thumbnail"><img src="' + data[0]["img_small"] + '"/></div>');
 	$('#data').empty();
-	$('#data').append('<h4>' + data[0]["title"] + '</h4>' + 
+
+	/*$('#data').append('<h4>' + data[0]["title"] + '</h4>' + 
 	'<div><b>Year:</b> ' + data[0]["year"] + '</div>' + 
 	'<div><b>Description:</b> ' + data[0]["description"] + '</div>' + 
 	'<div><b>Rating:</b> ' + data[0]["rating"] + '</div>' + 
 	'<div><b>Director:</b> ' + data[0]["director"] + '</div>' + 
-	'<div><b>URL:</b> ' + data[0]["url"] + '</div>');
+	'<div><b>URL:</b> ' + data[0]["url"] + '</div>');*/
+	$('#data').append('<h4>' + data[0]["title"] + ((data[0]["year"] != "") ? ' (' + data[0]["year"] + ')' : '')  + '</h4>' + 
+	'<div>' + data[0]["description"] + '</div>' + 
+	'<a href="' + data[0]["url"] + '"><div class="imdb-rating">' + data[0]["rating"] + '</div></a>' + 
+	'<div><b>Director:</b> ' + data[0]["director"] + '</div>');
 
 	if (table == 'tv_shows') {
-	$('#data').append('<div><b>status:</b> ' + data[0]["status"] + '</div>');
+		$('#data').append('<div><b>status:</b> ' + data[0]["status"] + '</div>');
 		$('#data').append('<div class="panel-group" id="accordion">');
 		if (epdata[0] != null) {
 			$.each(epdata, function(i, v) { // for each entry
 				var se = v["se_num"]; var ep = v["ep_num"];
 				if (se < 10){ se = "0" + se }; if (ep < 10){ ep = "0" + ep };
 				
-				$('#data').append(	'<div class="panel panel-primary"><div class="panel-heading"><h3 class="panel-title">' +
-									'<a data-toggle="collapse" data-parent="#accordion" href="#collapse' + i +'">' +
-									'<strong>S' + se + 'E' + ep + ' | ' + v["title"] + '</strong>' +
-									'</a></h3></div><div id="collapse' + i + '" class="panel-collapse collapse">' +
-									'<div class="panel-body"><img width="300px" src="' + v["screenshot"] + '"/>' +
-									'</br></br><div class="well well-sm">' + v["description"] + '</div>' +
-									'<button id="tpbsearch' + se + ep + '" name="tpbsearch" type="button" class="btn btn-warning">Search on TPB</button>' +
-									'<button id="eztvsearch' + se + ep + '" name="eztvsearch" type="button" class="btn btn-primary">Search on EZTV</button>' +
-									'</div><div id="torLoad' + se + ep + '" style="display: none;">' +
-									'<img src="../../static/spinner.gif"/></div>' +
-									'<ul class="list-group" id="torList' + se + ep + '"></ul>' +
-									'</div></div>')
+				$('#data').append('<div class="panel panel-primary"><div class="panel-heading"><h3 class="panel-title">' +
+				'<a data-toggle="collapse" data-parent="#accordion" href="#collapse' + i +'">' +
+				'<strong>S' + se + 'E' + ep + ' | ' + v["title"] + '</strong>' +
+				'</a></h3></div><div id="collapse' + i + '" class="panel-collapse collapse">' +
+				'<div class="panel-body"><img width="300px" src="' + v["screenshot"] + '"/>' +
+				'</br></br><div class="well well-sm">' + v["description"] + '</div>' +
+				'<button id="tpbsearch' + se + ep + '" name="tpbsearch" type="button" class="btn btn-warning">Search on TPB</button>' +
+				'<button id="eztvsearch' + se + ep + '" name="eztvsearch" type="button" class="btn btn-primary">Search on EZTV</button>' +
+				'</div><div id="torLoad' + se + ep + '" style="display: none;">' +
+				'<img src="../../static/spinner.gif"/></div>' +
+				'<ul class="list-group" id="torList' + se + ep + '"></ul>' +
+				'</div></div>')
 				
 				getData('#tpbsearch', 'tpb', se, ep, data[0]["title"]);
 				getData('#eztvsearch', 'eztv', se, ep, data[0]["title"]);
@@ -75,9 +80,28 @@ $(function() {
 		$('#data').append('</div>');
 	} else {
 		$('#data').append('<div><b>hash:</b> ' + data[0]["hash"] + '</div>');
+		
+		// progress bar from deluge
+		$.ajax({
+			dataType: "json",
+			cache: true,
+			url: "/progress/" + data[0]["hash"],
+			success: function(data) {
+				$('#data').append('<div class="progress">' +
+				'<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + data +
+				'" aria-valuemin="0" aria-valuemax="100" style="width:' + data + '%">' + data + '%</div></div>');
+			},
+			//debug
+			error: function(data) {
+				$('#data').append('<div class="progress">' +
+				'<div class="progress-bar progress-bar-danger progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%">0%</div></div>');
+			}
+		});
 	}
-	
-	$('#data').append('<video width="800" controls><source src="..\\..\\media\\' + data[0]["folder"] + '" type="video/mp4">Your browser does not support HTML5 video.</video>');
+
+	if (data[0]["folder"] != "") {
+		$('#main').append('<video width="800" controls><source src="..\\..\\media\\' + data[0]["imdb_id"] + '\\' + data[0]["folder"] + '" type="video/mp4">Your browser does not support HTML5 video.</video>');
+	}
 });
 
 </script>

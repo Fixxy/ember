@@ -30,6 +30,7 @@
 		<input type="file">
 	</div>
 -->
+	<select id="media-dir" name="media-dir" style="display: none;"></select><br>
 	<button id="form-submit" type="submit" class="btn btn-primary disabled">Add</button>
 </form>
 
@@ -39,7 +40,9 @@ $(function(){
 	var movieURL = "http://www.theimdbapi.org/api/find/movie";
 	var tvURL = "http://api.tvmaze.com/search/shows";
 	var tvEpisodesURL = "http://api.tvmaze.com/shows/";
-
+	var folders = '{{folders|tojson|safe}}';
+	var folders_array = JSON.parse("[" + folders + "]");
+	
 	//var type = "{{type|safe}}";
 	$("#movie-title").autocomplete({
 		delay: 1000,
@@ -96,6 +99,10 @@ $(function(){
 							$("#tpb").append('<li class="list-group-item"><input type="radio" name="radioButtons" id="radio' + i + '" magnet="' + v[1] + '" hash="' + v[3] + '"><span class="badge badge-seeds">' + v[2] + '</span> ' + v[0] + '</li>');
 						});
 						$("#ret-tpb").hide();
+						for (var i=0, len=folders_array[0].length; i < len; i++) {
+							$("#media-dir").append('<option value="' + folders_array[0][i] + '">' + folders_array[0][i] + '</option>');
+						}
+						$("#media-dir").show();
 					},
 					error: function (xhr, status, error) {
 						console.log(error);
@@ -145,6 +152,10 @@ $(function(){
 		$("#movie-magnet").val($(this).attr("magnet"));
 		$("#movie-hash").val($(this).attr("hash"));
 		$("#form-submit").removeClass("disabled");
+	});
+	
+	$("#media-dir").change(function() {
+		if ($(this).val() != "") { $("#form-submit").removeClass("disabled"); }
 	});
 
 	// Allow title input on checkbox group (tvormovieGroup) click
