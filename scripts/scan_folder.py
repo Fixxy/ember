@@ -83,5 +83,6 @@ def scan(root, name):
 		# Add to the resulting list
 		#found.append(info)
 	#return json.dumps(found)
-	return json.dumps(info) + "\n"
+	result = json.dumps(info) + "\n" if info else ''
+	return result
 	

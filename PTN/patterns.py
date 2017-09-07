@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 patterns = [
-    ('season', '((s?|season\s+)([0-9]{1,2}))([ex]|\s+episode|\s+Ep\.|\.|xw)'),
+    ('season', '((s|season\s+)([0-9]{1,2}))([ex]|\s+episode|\s+Ep\.|\.|xw)'),
     ('episode', '(([ex]|\s+episode\s+|\s+Ep\.|\.|xw)([0-9]{2})(?:[^0-9]|$))'),
     ('year', '([\[\(]?((?:19[0-9]|20[01])[0-9])[\]\)]?)'),
     ('resolution', '([0-9]{3,4}p)'),

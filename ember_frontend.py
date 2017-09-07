@@ -22,8 +22,8 @@ media_dir = ''
 # Main page
 @app.route('/')
 def index():
-	latest_tvshows, temp = sqlite_routine.db2json("tv_shows","",0,6)
-	latest_movies, temp = sqlite_routine.db2json("movies","",0,6)
+	latest_tvshows, temp = sqlite_routine.db2json("tv_shows","",0,11)
+	latest_movies, temp = sqlite_routine.db2json("movies","",0,11)
 	return render_template('index.html', data_tv=latest_tvshows, data_movies=latest_movies)
 
 # Show specific movie
@@ -36,7 +36,7 @@ def show_item(table,imdb_id):
 @app.route('/all/<string:table>/<int:page>', methods=['GET'])
 def show_all(table,page):
 	total_items = sqlite_routine.number_of_rows_all(table)
-	items_per_page = 9
+	items_per_page = 12
 	if (page == 0 or page > int(math.ceil(total_items/items_per_page))):
 		return render_template('404.html')
 	else:
@@ -50,7 +50,7 @@ def search_items(page):
 	#return sqlite_routine.db2json_search(request.form["search-all-field"],0,0)
 	data_all = sqlite_routine.db2json_search(request.form["search-all-field"],0,0)
 	total_items = len(json.loads(data_all))
-	items_per_page = 9
+	items_per_page = 12
 	if (page == 0 or page > int(math.ceil(total_items/items_per_page))):
 		return render_template('search-all.html', data_all=None, total_items=None, page=None, items_per_page=None, request=request.form["search-all-field"], noresults=1)
 	else:

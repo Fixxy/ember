@@ -26,14 +26,11 @@ $(function() {
 		// Fill div with content
 		$('#all-items').empty();
 		$.each(data_all, function(i, v) {
-			$('#allitems').append('<div class="col-md-4"><div class="thumbnail thumbs-fixed-height">' + 
-			'<img src="' + v["img_small"] + '">' + 
-			'<div class="caption">' + 
-			'<h4>' + v["title"] + '</h4>' + 
-			'<p class="desc-overflow">' + v["description"] + '</p>' + 
-			'<p><b>Rating: ' + v["rating"] + '</b></p>' + 
-			'<p><a class="btn btn-primary" href="/item/' + v['table'] + '/' + v['imdb_id'] + '">More</a></p>' + 
-			'</div>' + 
+			$('#allitems').append('<div class="thumbnail-index">' + 
+			'<div class="poster"><img src="' + v["img_small"] + '"/></div>' + 
+			'<div><a class="btn btn-more" href="/item/' + v['table'] + '/' + v['imdb_id'] + '">More</a></div>' + 
+			'<div class="title">' + v["title"] + 
+				'<div class="rating"><i class="fa fa-star icon-rating" aria-hidden="true"></i><span>' + v["rating"] + '</span></div>' + 
 			'</div></div>');
 		});
 	} else {

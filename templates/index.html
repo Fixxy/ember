@@ -12,26 +12,20 @@ $(function() {
 	var data_movies = {{data_movies|safe}};
 	$('#tv-series').empty();
 	$.each(data_tv, function(i, v) {
-		$('#tv-series').append('<div class="col-md-4"><div class="thumbnail thumbs-fixed-height">' + 
-		'<img src="' + v["img_small"] + '">' + 
-		'<div class="caption">' + 
-		'<h4>' + v["title"] + '</h4>' + 
-		'<p class="desc-overflow">' + v["description"] + '</p>' + 
-		'<p><b>Rating: ' + v["rating"] + '</b></p>' + 
-		'<p><a class="btn btn-primary" href="/item/tv_shows/' + v['imdb_id'] + '">More</a></p>' + 
-		'</div>' + 
+		$('#tv-series').append('<div class="thumbnail-index">' + 
+		'<div class="poster"><img src="' + v["img_small"] + '"/></div>' + 
+		'<div><a class="btn btn-more" href="/item/tv_shows/' + v['imdb_id'] + '">More</a></div>' + 
+		'<div class="title">' + v["title"] + 
+			'<div class="rating"><i class="fa fa-star icon-rating" aria-hidden="true"></i><span>' + v["rating"] + '</span></div>' + 
 		'</div></div>');
 	});
 	$('#movies').empty();
 	$.each(data_movies, function(i, v) {
-		$('#movies').append('<div class="col-md-4"><div class="thumbnail thumbs-fixed-height">' + 
-		'<img src="' + v["img_small"] + '">' + 
-		'<div class="caption">' + 
-		'<h4>' + v["title"] + '</h4>' + 
-		'<p class="desc-overflow">' + v["description"] + '</p>' + 
-		'<p><b>Rating: ' + v["rating"] + '</b></p>' + 
-		'<p><a class="btn btn-primary" href="/item/movies/' + v['imdb_id'] + '">More</a></p>' + 
-		'</div>' + 
+		$('#movies').append('<div class="thumbnail-index">' + 
+		'<div class="poster"><img src="' + v["img_small"] + '"/></div>' + 
+		'<div><a class="btn btn-more" href="/item/movies/' + v['imdb_id'] + '">More</a></div>' + 
+		'<div class="title">' + v["title"] + 
+			'<div class="rating"><i class="fa fa-star icon-rating" aria-hidden="true"></i><span>' + v["rating"] + '</span></div>' + 
 		'</div></div>');
 	});
 	//$('#tv-series').append('<div class="text-center col-md-4"><a class="btn btn-primary btn-add" href="/new/">+</a></div>');
