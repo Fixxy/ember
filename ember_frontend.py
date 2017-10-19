@@ -8,9 +8,9 @@
 # flask run --host=0.0.0.0 // open to entire network
 
 # Initialisation
-import configparser, json, math, os
+import configparser, json, math, os, urllib
 from scripts import tpb_search, eztv_search, sqlite_routine, deluge_routine, scan_folder
-from flask import Flask, Response, request, render_template, json, jsonify, send_from_directory
+from flask import Flask, Response, request, render_template, json, jsonify, send_from_directory, send_file
 app = Flask(__name__)
 
 # Parsing config file
@@ -70,13 +70,14 @@ def add_to_db():
 										request.form['movie-magnet'],
 										request.form['movie-hash'],
 										media_dir,
+										request.form['movie-dir'],
 										request.form['tvormovieGroup'],
 										request.form['movie-episodes'],
 										request.form['redirect'])
-	if 'movies' in request.form['tvormovieGroup']:
-		path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], media_dir) # download via deluge
-		sqlite_routine.set_dir(path, request.form['movie-hash'])
-	
+	if (request.form['movie-dir'] == "" and media_dir != ""): # check if file already exists or if it needs to be downloaded
+		if 'movies' in request.form['tvormovieGroup']:
+			path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], media_dir) # download via deluge
+			sqlite_routine.set_dir(path, request.form['movie-hash'])
 	return unit_data
 
 # Scan folders for movies and tv-series - form
@@ -100,19 +101,23 @@ def scan_folder_request():
 def tpb(query):
 	data = tpb_search.getTopRes(query)
 	return data
-	
+
 # Search on eztv
 @app.route('/eztv/<string:query>/', methods=['GET','POST'])
 def eztv(query):
 	data = eztv_search.getTopRes(query)
 	return data
-	
+
 # cdn
 @app.route('/media/<string:imdb_id>/<path:filename>')
 def media_file(imdb_id, filename):
 	main_folder = sqlite_routine.get_main_folder(imdb_id)
-	return send_from_directory(main_folder, filename)
-	
+	filename = urllib.parse.unquote(filename)
+	if (main_folder == "" and filename != ""):
+		return send_file(filename)
+	else:
+		return send_from_directory(main_folder, filename)
+
 # get download progress from deluge
 @app.route('/progress/<string:hash>')
 def deluge_progress(hash):

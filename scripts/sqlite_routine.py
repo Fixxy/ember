@@ -15,7 +15,7 @@ def remHTML(raw):
 	return clean
 
 
-def json2db(jsondata, magnet, hash, folder_main, tv_or_movie, episodes, redirectflag):
+def json2db(jsondata, magnet, hash, folder_main, folder, tv_or_movie, episodes, redirectflag):
 	if 'movies' in tv_or_movie:
 		db = sqlite3.connect(dbfile)
 		c = db.cursor()
@@ -38,9 +38,9 @@ def json2db(jsondata, magnet, hash, folder_main, tv_or_movie, episodes, redirect
 		
 		# Add movie
 		# Create new row if it doesn't exist
-		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,length,director,cast,img_big,img_small,magnet,hash,folder_main) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (data['imdb_id'], data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, data['imdb_id']))
+		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,length,director,cast,img_big,img_small,magnet,hash,folder_main,folder) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (data['imdb_id'], data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, folder, data['imdb_id']))
 		# Try to update row if it already exists
-		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, length=?, director=?, cast=?, img_big=?, img_small=?, magnet=coalesce(?,magnet), hash=coalesce(?,hash), folder_main=coalesce(?,folder_main) WHERE imdb_id=?', (data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, data['imdb_id']))
+		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, length=?, director=?, cast=?, img_big=?, img_small=?, magnet=coalesce(?,magnet), hash=coalesce(?,hash), folder_main=coalesce(?,folder_main), folder=coalesce(?,folder) WHERE imdb_id=?', (data['title'], data['description'], data['year'], data['rating'], data['url']['url'], data['length'], data['director'], cast_list[1:], data['poster']['large'], data['poster']['thumb'], magnet, hash, folder_main, folder, data['imdb_id']))
 		db.commit()
 		db.close()
 	else: # if it's a tv-show
@@ -55,9 +55,9 @@ def json2db(jsondata, magnet, hash, folder_main, tv_or_movie, episodes, redirect
 		# Add a TV-show
 		#c.execute('INSERT INTO ' + table + ' (imdb_id,title,description,year,rating,url,img_big,img_small,status) VALUES(?,?,?,?,?,?,?,?,?)', (imdb_id, str(data['name']), summary_s, data['premiered'][:4], str(data['rating']['average']), ('http://www.imdb.com/title/%s/' % (imdb_id)), data['image']['original'], data['image']['medium'], data['status']))
 		# Create new row if it doesn't exist
-		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,img_big,img_small,status) SELECT ?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (imdb_id, str(data['name']), summary_s, data['premiered'][:4], str(data['rating']['average']), ('http://www.imdb.com/title/%s/' % (imdb_id)), data['image']['original'], data['image']['medium'], data['status'], imdb_id))
+		c.execute('INSERT INTO ' + table + '(imdb_id,title,description,year,rating,url,img_big,img_small,status,folder) SELECT ?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM ' + table + ' WHERE imdb_id=?)', (imdb_id, str(data['name']), summary_s, data['premiered'][:4], str(data['rating']['average']), ('http://www.imdb.com/title/%s/' % (imdb_id)), data['image']['original'], data['image']['medium'], data['status'], folder_main, imdb_id))
 		# Try to update row if it already exists
-		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, img_big=?, img_small=?, status=? WHERE imdb_id=?', (str(data['name']), summary_s, data['premiered'][:4], str(data['rating']['average']), ('http://www.imdb.com/title/%s/' % (imdb_id)), data['image']['original'], data['image']['medium'], data['status'], imdb_id))
+		c.execute('UPDATE ' + table + ' SET title=?, description=?, year=?, rating=?, url=?, img_big=?, img_small=?, status=?, folder=? WHERE imdb_id=?', (str(data['name']), summary_s, data['premiered'][:4], str(data['rating']['average']), ('http://www.imdb.com/title/%s/' % (imdb_id)), data['image']['original'], data['image']['medium'], data['status'], folder_main, imdb_id))
 		
 		# add to the watchlist if currently running
 		nextEpisode = ''
@@ -92,8 +92,8 @@ def json2db(jsondata, magnet, hash, folder_main, tv_or_movie, episodes, redirect
 			#	+ summary + '","'
 			#	+ ep['airdate'] + '","'
 			#	+ image + '");')
-			c.execute('INSERT INTO tv_shows_episodes(tv_show_id,se_num,ep_num,title,description,airdate,screenshot,folder_main) SELECT ?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM tv_shows_episodes WHERE tv_show_id=? AND se_num=? AND ep_num=?)', (imdb_id, str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder_main, imdb_id, str(ep['season']), str(ep['number'])))
-			c.execute('UPDATE tv_shows_episodes SET se_num=?, ep_num=?, title=?, description=?, airdate=?, screenshot=?, folder_main=coalesce(?,folder_main) WHERE tv_show_id=? AND se_num=? AND ep_num=?', (str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder_main, imdb_id, str(ep['season']), str(ep['number'])))
+			c.execute('INSERT INTO tv_shows_episodes(tv_show_id,se_num,ep_num,title,description,airdate,screenshot,folder) SELECT ?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM tv_shows_episodes WHERE tv_show_id=? AND se_num=? AND ep_num=?)', (imdb_id, str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder, imdb_id, str(ep['season']), str(ep['number'])))
+			c.execute('UPDATE tv_shows_episodes SET se_num=?, ep_num=?, title=?, description=?, airdate=?, screenshot=?, folder=coalesce(?,folder) WHERE tv_show_id=? AND se_num=? AND ep_num=?', (str(ep['season']), str(ep['number']), ep['name'].replace('"',''), summary, ep['airdate'], image, folder, imdb_id, str(ep['season']), str(ep['number'])))
 
 		db.commit()
 		db.close()

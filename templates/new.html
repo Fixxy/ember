@@ -18,6 +18,7 @@
 	<input id="movie-episodes" name="movie-episodes" type="hidden" value="">
 	<input id="movie-magnet" name="movie-magnet" type="hidden" value="">
 	<input id="movie-hash" name="movie-hash" type="hidden" value="">
+	<input id="movie-dir" name="movie-dir" type="hidden" value="">
 	<input id="redirect" name="redirect" type="hidden" value="1">
 	
 	<div id="selected-movie" style="display: none;"></div>
@@ -118,6 +119,10 @@ $(function(){
 						console.log(data);//////////////////////////////////////////////////
 						$("#movie-episodes").val(JSON.stringify(data));
 						$("#ret-tpb").hide();
+						for (var i=0, len=folders_array[0].length; i < len; i++) {
+							$("#media-dir").append('<option value="' + folders_array[0][i] + '">' + folders_array[0][i] + '</option>');
+						}
+						$("#media-dir").show();
 						$("#form-submit").removeClass("disabled");
 						$("#movie-magnet").val("0");		  
 					}

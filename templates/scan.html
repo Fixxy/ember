@@ -78,13 +78,13 @@ $(function(){
 		$('input[name^=radioButtons]:radio:checked').each(function() {
 			var json = JSON.parse($(this).val());
 			var episodes = {};
-			jQuery.map(json["episodes"], function(obj) { // find specific episode
-				if (obj["season"] === json["season"] && obj["number"] === json["episode"]) {
-					//console.log(obj)
-					//episodes.push(obj);
-					episodes = obj;
-				}
-			});
+			if (json["type"] == "tv_shows") {
+				jQuery.map(json["episodes"], function(obj) { // find specific episode
+					if (obj["season"] === json["season"] && obj["number"] === json["episode"]) {
+						episodes = obj;
+					}
+				});
+			}
 			//console.log(json);
 			$.ajax({
 				type: 'POST',
@@ -98,7 +98,9 @@ $(function(){
 					"movie-dir" : json["path"],
 					"tvormovieGroup" : json["type"],
 					"movie-episodes" : (json["type"] == "movies") ? "" : "[" + JSON.stringify(episodes) + "]",
-					"redirect" : "0"
+					"redirect" : "0",
+					
+					"media-dir" : ""
 				},
 				success: function(data) {
 					$('input#'+data).siblings(".scanned-title").before(disabledMessage);
