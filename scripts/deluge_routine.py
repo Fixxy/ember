@@ -6,8 +6,9 @@ video_formats = ('.webm', '.mkv', '.flv', '.avi', '.mov', '.wmv', '.mp4')
 dHost = '127.0.0.1'
 dPort = 58846
 dUser = 'localclient'
-dPass = '813725b1fb8a18f15f8c9e36224347fb6d37e538' #work
-#dPass = 'ea721c8753060acee794819a83ffafce544a18f3' #pc at home
+dPass = '9571970831f96f40290bba75918cbdb727e77af5' #q-ball - work
+#dPass = '813725b1fb8a18f15f8c9e36224347fb6d37e538' #fixxy - work
+#dPass = 'ea721c8753060acee794819a83ffafce544a18f3' #fixxy - home
 
 def dwnTorrent(magnet, hash, dir):
 	client = DelugeRPCClient(dHost, dPort, dUser, dPass)

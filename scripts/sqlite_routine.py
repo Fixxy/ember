@@ -207,16 +207,16 @@ def number_of_rows_all(table):
 	return row[0]
 
 
-def set_dir(dir, hash):
+def set_dir(table, dir, hash):
 	if dir is not None:
 		db = sqlite3.connect(dbfile)
 		c = db.cursor()
-		c.execute('UPDATE movies SET folder = "' + dir + '" WHERE hash="' + str(hash) + '";')
+		c.execute('UPDATE ' + table + ' SET folder = "' + dir + '" WHERE hash="' + str(hash) + '";')
 		db.commit()
 		db.close()
 	return
-	
-	
+
+
 # add new media folders
 def get_main_folder(imdb_id):
 	if imdb_id is not None:
@@ -227,3 +227,16 @@ def get_main_folder(imdb_id):
 		db.commit()
 		db.close()
 		return row[0]
+
+
+def update_torrent_info(imdb_id, magnet, hash, se, ep):
+	# returns value if movie's in the database - has folder specified
+	db = sqlite3.connect(dbfile)
+	c = db.cursor()
+	table = "tv_shows_episodes"
+	c.execute('UPDATE tv_shows_episodes SET magnet=?, hash=? WHERE tv_show_id=? AND se_num=? AND ep_num=?;', (magnet, hash, imdb_id, se, ep))
+	c.execute('SELECT folder FROM tv_shows WHERE imdb_id="%s"' % (imdb_id))
+	row = c.fetchone()
+	db.commit()
+	db.close()
+	return row[0]

@@ -77,8 +77,20 @@ def add_to_db():
 	if (request.form['movie-dir'] == "" and media_dir != ""): # check if file already exists or if it needs to be downloaded
 		if 'movies' in request.form['tvormovieGroup']:
 			path = deluge_routine.dwnTorrent(request.form['movie-magnet'], request.form['movie-hash'], media_dir) # download via deluge
-			sqlite_routine.set_dir(path, request.form['movie-hash'])
+			sqlite_routine.set_dir("movies", path, request.form['movie-hash'])
 	return unit_data
+
+# Update torrent info
+@app.route('/update/torrent/', methods=['POST'])
+def update_torrent_info():
+	location = sqlite_routine.update_torrent_info( request.form['tv-imdb'],
+												  request.form['tv-magnet'],
+												  request.form['tv-hash'],
+												  request.form['tv-se'],
+												  request.form['tv-ep'])
+	path = deluge_routine.dwnTorrent(request.form['tv-magnet'], request.form['tv-hash'], location) # download via deluge
+	sqlite_routine.set_dir("tv_shows_episodes", path, request.form['tv-hash'])
+	return location + path
 
 # Scan folders for movies and tv-series - form
 @app.route('/scan/', methods=['GET','POST'])
@@ -116,7 +128,7 @@ def media_file(imdb_id, filename):
 	if (main_folder == "" and filename != ""):
 		return send_file(filename)
 	else:
-		return send_from_directory(main_folder, filename)
+		return send_file(main_folder + "\\" + filename)
 
 # get download progress from deluge
 @app.route('/progress/<string:hash>')
